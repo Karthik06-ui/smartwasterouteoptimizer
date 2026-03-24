@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Waste Route Optimizer · TSP</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav id="navbar">
+    <div class="nav-logo">
+      <span class="logo-icon">♻</span>
+      <span class="logo-text">WasteOpt<span class="accent">TSP</span></span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#calculator">Calculator</a></li>
+      <li><a href="#graph">Graph</a></li>
+      <li><a href="#theory">Theory</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section id="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span> Traveling Salesman Problem · 6 Zones
+      </div>
+      <h1 class="hero-title">Smart Waste<br/><span class="accent-text">Collection</span><br/>Route Optimizer</h1>
+      <p class="hero-subtitle">Minimizing fuel, time & delay costs across urban collection zones using combinatorial optimization and dynamic cost modeling.</p>
+      <div class="hero-stats">
+        <div class="stat-pill"><span class="stat-num">6</span><span class="stat-label">Zones</span></div>
+        <div class="stat-pill"><span class="stat-num">49</span><span class="stat-label">Min Cost</span></div>
+        <div class="stat-pill"><span class="stat-num">TSP</span><span class="stat-label">Algorithm</span></div>
+        <div class="stat-pill"><span class="stat-num">O(n!)</span><span class="stat-label">Complexity</span></div>
+      </div>
+      <a href="#calculator" class="hero-cta">Explore Optimizer ↓</a>
+    </div>
+    <div class="hero-visual">
+      <div class="pulse-ring r1"></div>
+      <div class="pulse-ring r2"></div>
+      <div class="pulse-ring r3"></div>
+      <div class="hero-icon-wrap">♻</div>
+    </div>
+  </section>
+
+  <!-- ── CALCULATOR ── -->
+  <section id="calculator">
+    <div class="section-header">
+      <span class="section-tag">// INPUT</span>
+      <h2 class="section-title">Route Calculator</h2>
+      <p class="section-desc">Adjust the penalty coefficient λ to balance distance vs. delay in cost computation.</p>
+    </div>
+
+    <div class="calc-container">
+      <div class="calc-card">
+        <div class="calc-formula">
+          <span class="formula-text">Cost = Distance + λ × Delay</span>
+        </div>
+        <div class="input-group">
+          <label for="lambda">Lambda (λ) — Delay Penalty Weight</label>
+          <div class="input-row">
+            <input type="number" id="lambda" value="1" min="0" max="10" step="0.1" placeholder="e.g. 1"/>
+            <span class="input-unit">penalty factor</span>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" id="lambdaSlider" min="0" max="5" step="0.1" value="1"/>
+            <div class="slider-labels">
+              <span>0 (distance only)</span>
+              <span>5 (delay dominant)</span>
+            </div>
+          </div>
+        </div>
+        <button id="calcBtn" class="calc-btn">
+          <span class="btn-icon">⚡</span>
+          <span>Calculate Optimal Route</span>
+        </button>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="output-panel" id="outputPanel">
+        <div class="output-loading" id="outputLoading">
+          <div class="loading-bar"></div>
+          <span>Computing permutations…</span>
+        </div>
+        <div class="output-result" id="outputResult" style="display:none;">
+          <div class="result-row">
+            <div class="result-card primary">
+              <div class="result-label">Optimal Route</div>
+              <div class="result-route" id="resultRoute">
+                <span class="zone-node">1</span>
+                <span class="route-arrow">→</span>
+                <span class="zone-node">2</span>
+                <span class="route-arrow">→</span>
+                <span class="zone-node">4</span>
+                <span class="route-arrow">→</span>
+                <span class="zone-node">5</span>
+                <span class="route-arrow">→</span>
+                <span class="zone-node">6</span>
+                <span class="route-arrow">→</span>
+                <span class="zone-node">3</span>
+                <span class="route-arrow">→</span>
+                <span class="zone-node return">1</span>
+              </div>
+            </div>
+            <div class="result-card secondary">
+              <div class="result-label">Minimum Cost</div>
+              <div class="result-cost" id="resultCost">
+                <span class="cost-num">49</span>
+                <span class="cost-unit">units</span>
+              </div>
+            </div>
+          </div>
+          <div class="breakdown-grid" id="breakdownGrid"></div>
+          <div class="lambda-note" id="lambdaNote"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GRAPH VISUALIZATION ── -->
+  <section id="graph">
+    <div class="section-header">
+      <span class="section-tag">// VISUALIZATION</span>
+      <h2 class="section-title">Graph View</h2>
+      <p class="section-desc">All edges shown with (distance / delay) labels. Optimal path highlighted in green.</p>
+    </div>
+
+    <div class="graph-wrapper">
+      <div class="graph-legend">
+        <div class="legend-item">
+          <span class="legend-line normal"></span> All Edges
+        </div>
+        <div class="legend-item">
+          <span class="legend-line optimal"></span> Optimal Route
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot"></span> Zone Node
+        </div>
+      </div>
+
+      <div class="graph-canvas-wrap">
+        <svg id="graphSVG" viewBox="0 0 620 500" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowOptimal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#00ff88"/>
+            </marker>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="nodeGlow">
+              <feGaussianBlur stdDeviation="5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Edges and nodes drawn by JS -->
+        </svg>
+      </div>
+
+      <div class="graph-matrix">
+        <div class="matrix-title">Cost Matrix (λ = <span id="matrixLambda">1</span>)</div>
+        <div class="matrix-wrap" id="matrixWrap"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── THEORY SECTIONS ── -->
+  <section id="theory">
+    <div class="section-header">
+      <span class="section-tag">// THEORY</span>
+      <h2 class="section-title">Mathematical Framework</h2>
+      <p class="section-desc">The theoretical foundations behind the optimization model.</p>
+    </div>
+
+    <div class="theory-grid">
+
+      <div class="theory-card" data-delay="0">
+        <div class="theory-icon">🗺️</div>
+        <h3>Problem Understanding</h3>
+        <p>A waste collection vehicle must visit <strong>6 zones</strong> exactly once and return to the depot (Zone 1). Each arc between zones carries a <em>distance</em> and a <em>delay</em> cost. The challenge is finding the tour with minimum total cost.</p>
+      </div>
+
+      <div class="theory-card" data-delay="1">
+        <div class="theory-icon">📐</div>
+        <h3>Assumptions</h3>
+        <ul>
+          <li>Single vehicle, single depot at Zone 1</li>
+          <li>All zones must be visited exactly once</li>
+          <li>Distance & delay values are deterministic</li>
+          <li>Directed graph with 6 nodes and 30 arcs</li>
+          <li>λ is a non-negative scalar known a priori</li>
+        </ul>
+      </div>
+
+      <div class="theory-card" data-delay="2">
+        <div class="theory-icon">📊</div>
+        <h3>Mathematical Model</h3>
+        <p>Let <code>d<sub>ij</sub></code> be the distance and <code>t<sub>ij</sub></code> be the delay from zone <em>i</em> to zone <em>j</em>. The edge cost is defined as:</p>
+        <div class="math-block">c<sub>ij</sub> = d<sub>ij</sub> + λ · t<sub>ij</sub></div>
+        <p>where λ ≥ 0 is a weighting coefficient controlling the trade-off between travel distance and time delay.</p>
+      </div>
+
+      <div class="theory-card" data-delay="3">
+        <div class="theory-icon">⚙️</div>
+        <h3>Optimization Formulation</h3>
+        <p>Minimize the total tour cost:</p>
+        <div class="math-block">min Σ<sub>i≠j</sub> c<sub>ij</sub> · x<sub>ij</sub></div>
+        <p>Subject to: each zone entered & exited exactly once, and subtour elimination constraints (Miller–Tucker–Zemlin). Binary decision variables <code>x<sub>ij</sub> ∈ {0, 1}</code>.</p>
+      </div>
+
+      <div class="theory-card" data-delay="4">
+        <div class="theory-icon">🧠</div>
+        <h3>Algorithm Design</h3>
+        <p>With only <strong>6 zones</strong>, brute-force enumeration is feasible: (6−1)! = <strong>120 permutations</strong>. Each permutation is evaluated by summing edge costs along the tour. The permutation with the minimum sum is selected as the optimal route.</p>
+      </div>
+
+      <div class="theory-card" data-delay="5">
+        <div class="theory-icon">📈</div>
+        <h3>Complexity Analysis</h3>
+        <div class="complexity-table">
+          <div class="cplx-row header"><span>Method</span><span>Time</span><span>Space</span></div>
+          <div class="cplx-row"><span>Brute Force</span><span>O(n!)</span><span>O(n)</span></div>
+          <div class="cplx-row"><span>Dynamic Prog.</span><span>O(n²·2ⁿ)</span><span>O(n·2ⁿ)</span></div>
+          <div class="cplx-row highlight"><span>This Demo (n=6)</span><span>120 ops</span><span>O(1)</span></div>
+        </div>
+      </div>
+
+      <div class="theory-card wide" data-delay="6">
+        <div class="theory-icon">🏆</div>
+        <h3>Results & Interpretation</h3>
+        <div class="results-detail">
+          <div class="result-detail-item">
+            <span class="rd-label">Optimal Route</span>
+            <span class="rd-value route-inline">1 → 2 → 4 → 5 → 6 → 3 → 1</span>
+          </div>
+          <div class="result-detail-item">
+            <span class="rd-label">Minimum Cost</span>
+            <span class="rd-value cost-inline">49 units</span>
+          </div>
+          <div class="result-detail-item">
+            <span class="rd-label">Lambda (λ)</span>
+            <span class="rd-value">1.0 (balanced)</span>
+          </div>
+          <div class="result-detail-item">
+            <span class="rd-label">Zones Visited</span>
+            <span class="rd-value">All 6 (each once)</span>
+          </div>
+        </div>
+        <p>The route 1→2→4→5→6→3→1 achieves the globally minimum cost of <strong>49</strong> for λ=1, visiting all collection zones efficiently before returning to the depot.</p>
+      </div>
+
+      <div class="theory-card" data-delay="7">
+        <div class="theory-icon">💡</div>
+        <h3>Insights</h3>
+        <ul>
+          <li>Higher λ favors low-delay routes over short-distance ones</li>
+          <li>Zone 2 and 4 form a natural cluster — low inter-cost</li>
+          <li>Zone 3 is best visited last before depot return</li>
+          <li>Zones 5 & 6 share a low-delay corridor</li>
+        </ul>
+      </div>
+
+      <div class="theory-card" data-delay="8">
+        <div class="theory-icon">✅</div>
+        <h3>Conclusion</h3>
+        <p>Brute-force TSP is viable for small networks (n ≤ 10). For larger city-scale deployments, heuristics like <strong>Nearest Neighbor</strong>, <strong>2-opt</strong>, or metaheuristics (GA, ACO) should be employed. The λ-weighted cost function provides a flexible framework adaptable to real-world logistics constraints.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">♻ WasteOpt<span class="accent">TSP</span></div>
+      <p class="footer-desc">Smart Waste Collection Route Optimization · College Project Demo</p>
+      <p class="footer-note">Built with Vanilla HTML · CSS · JavaScript · SVG Visualization</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
